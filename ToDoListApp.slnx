@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ToDoListApp.Api/ToDoListApp.Api.csproj" />
+  <Project Path="ToDoListApp.Data/ToDoListApp.Data.csproj" Id="d21db07a-0389-4498-9d9d-7b2c911a9141" />
+  <Project Path="ToDoListApp.Models/ToDoListApp.Models.csproj" />
+  <Project Path="ToDoListApp.Services/ToDoListApp.Services.csproj" Id="cf44ea4e-82b3-40d6-a13a-5a2f92f9a93e" />
+</Solution>

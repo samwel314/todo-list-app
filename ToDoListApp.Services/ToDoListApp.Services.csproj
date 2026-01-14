@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ToDoListApp.Data\ToDoListApp.Data.csproj" />
+    <ProjectReference Include="..\ToDoListApp.Models\ToDoListApp.Models.csproj" />
+  </ItemGroup>
+
+</Project>
