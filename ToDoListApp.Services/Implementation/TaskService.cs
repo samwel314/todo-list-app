@@ -10,7 +10,6 @@ namespace ToDoListApp.Services.Implementation
     public class TaskService : ITaskService
     {
         private readonly IUnitOfWork _db;
-
         public TaskService(IUnitOfWork db)
         {
             _db = db;
@@ -32,7 +31,6 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return taskToDB.TaskId;
         }
-
         public bool Update(int id ,  CreateUpdateTaskDTo dto)
         {
             TaskToDO? taskFromDB =
@@ -45,7 +43,6 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return true;    
         }
-
         public TaskDetailsDto? Get(int id)
         {
             var taskFromDB = _db.Tasks.Get(t => t.TaskId == id , Include :"Tag");
@@ -96,24 +93,27 @@ namespace ToDoListApp.Services.Implementation
         {
             TaskToDO? taskFromDB =
                 _db.Tasks.Get(t => t.TaskId == id, true);
+            // user cannot change status of completed task or set any status to timeout the system handles timeout
             if (taskFromDB == null ||
-                taskFromDB.Status == Models.TaskStatus.Completed)
-                return false;
-            if (taskFromDB.Status == Models.TaskStatus.TimeOut &&
-                dto.NewStatus!.Value == Models.TaskStatus.InProgress)
+                taskFromDB.Status == Models.TaskStatus.Completed 
+                || dto.NewStatus!.Value == Models.TaskStatus.TimeOut)
                 return false;
 
-            if (dto.NewStatus!.Value == Models.TaskStatus.Completed)
+            if (dto.NewStatus != Models.TaskStatus.Completed)
             {
-                taskFromDB.CompletedAT = DateTime.Now; 
-                taskFromDB.IsCompleted = true;  
-            }    
-      
+                if (dto.NewStatus!.Value < taskFromDB.Status)
+                    return false;
+            }
+            else
+            {
+                taskFromDB.CompletedAT = DateTime.Now;
+                taskFromDB.IsCompleted = true;     
+            }
+            
             taskFromDB.Status = dto.NewStatus!.Value;
             _db.Save();
             return true;    
         }
-
         public bool Delete(int id)
         {
             TaskToDO? taskFromDB =

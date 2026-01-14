@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
@@ -49,13 +48,13 @@ tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service  , LinkGener
         return Results.Problem(statusCode: 404, detail: "This Tag Not Found");
     var url = link.GetPathByName("GetTaskById", new { id = taskId });
     return  TypedResults.Created(url);
-});
+}).WithParameterValidation();
 tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) =>
 {
-    // check model dto 
+    // check model dto using validation library 
     return Service.Update(id, model) ? TypedResults.NoContent()
     : Results.Problem(statusCode: 404, detail: "Task Not Found");
-});
+}).WithParameterValidation();
 tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
@@ -66,7 +65,9 @@ tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService 
 });
 tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
-    // check status  
+    if (model.NewStatus == null || !Enum.IsDefined(typeof(ToDoListApp.Models.TaskStatus) , model.NewStatus.Value))  
+        return Results.Problem(statusCode: 400, detail: "This Value Is Not Defined ");
+ 
     return Service.ChangeStatus(id, model) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 });
