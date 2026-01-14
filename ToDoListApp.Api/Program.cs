@@ -41,7 +41,7 @@ tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
 }).WithName("GetTaskById");
 tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service  , LinkGenerator link) =>
 {
-    if (IsValidExpectedEndDate(model.ExpectedEndDate))
+    if (!IsValidExpectedEndDate(model.ExpectedEndDate))
         return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes");
    
     var taskId = Service.Create(model); 
@@ -58,7 +58,7 @@ tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) 
 });
 tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
-    if (IsValidExpectedEndDate(model.ExpectedEndDate))
+    if (!IsValidExpectedEndDate(model.ExpectedEndDate))
         return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes"); 
 
     return Service.ExtendTime(id, model) ? TypedResults.NoContent()
