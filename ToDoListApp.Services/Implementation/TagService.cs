@@ -63,7 +63,7 @@ namespace ToDoListApp.Services.Implementation
         public bool Update(int id, CreateUpdateTagDto dto)
         {
             var tagFromDB =
-                _db.Tags.Get(t => t.TagId == id);
+                _db.Tags.Get(t => t.TagId == id ,Tracking : true);
             if (tagFromDB == null /*|| tagFromDB.UserId * != dto.userId  */)
                 return false;
             tagFromDB.TagName = dto.TagName; 

@@ -16,7 +16,7 @@ namespace ToDoListApp.Services.Implementation
         }
         public int Create(CreateUpdateTaskDTo dto)
         {
-            // check if tag exists
+            // check if tag exists and soon we will check if this tag belongs to this user
             var tagFromDb = _db.Tags.GetAll(t => t.TagId == dto.TagId).Any();
             if (!tagFromDb)
                 return 0; 

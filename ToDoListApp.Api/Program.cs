@@ -73,7 +73,6 @@ tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
 });
 tasks.MapDelete("/{id}", (int id, ITaskService Service) =>
 {
-    // check status  
     return Service.Delete(id) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 });
@@ -98,13 +97,13 @@ notes.MapPost("/task/{taskId}", (int taskId, CreateUpdateNoteDto model ,  INoteS
     var url =  link.GetPathByName("GetNoteById", new { id = noteId }); 
     return noteId != 0 ? TypedResults.Created(url) :
     Results.Problem(statusCode: 404, detail: "This Task Not Found");
-});
+}).WithParameterValidation();
 notes.MapPut("/{id}", (int id, CreateUpdateNoteDto model, INoteService Service) =>
 {
     // check model dto  Progress_Note
     return Service.Update(id, model) ? TypedResults.NoContent()
     : Results.Problem(statusCode: 404, detail: "This Note Not Found");
-});
+}).WithParameterValidation();
 notes.MapDelete("/{id}", (int id, INoteService Service) =>
 {
     return Service.Delete(id) ? TypedResults.NoContent()
@@ -118,7 +117,6 @@ tags.MapGet("/", (ITagService Service) =>
     var tags = Service.GetUserTags("");
     return TypedResults.Ok(tags);
 });
-
 tags.MapGet("/{id}", (int id, ITagService Service) =>
 {
     // get user id from token and pass it to service soon
