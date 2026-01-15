@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
-using ToDoListApp.Models;
 using ToDoListApp.Services;
 using ToDoListApp.Services.Dto;
 using ToDoListApp.Services.Implementation;
@@ -10,6 +9,17 @@ using ToDoListApp.Services.Implementation;
 var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddHealthChecks();
 
+// work with swagger
+builder.Services.AddEndpointsApiExplorer();   
+builder.Services.AddSwaggerGen(x => x.SwaggerDoc("v1" , new Microsoft.OpenApi.OpenApiInfo
+{
+    Title = "To-Do-List App" , 
+    Version = "1.0", 
+    Description = "An API to manage your To-Do List",
+})
+);
+
+// to make all responses standard
 builder.Services.AddProblemDetails(); 
 // Work With DB 
 
@@ -25,7 +35,7 @@ var app = builder.Build();
 RouteGroupBuilder taskAppApi = app.MapGroup("/api");
 // task endPoints 
 RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks");
-
+tasks.WithTags("Tasks");    
 tasks.MapGet("/", (ITaskService Service) =>
 {
    return TypedResults.Ok(Service.GetAll());
@@ -37,7 +47,7 @@ tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
         return Results.Problem(statusCode: 404, detail: "Task not found");
 
     return TypedResults.Ok(task);
-}).WithName("GetTaskById");
+}).WithName("GetTaskById").Produces<TaskDetailsDto>(200).Produces(404);
 tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service  , LinkGenerator link) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
@@ -48,13 +58,13 @@ tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service  , LinkGener
         return Results.Problem(statusCode: 404, detail: "This Tag Not Found");
     var url = link.GetPathByName("GetTaskById", new { id = taskId });
     return  TypedResults.Created(url);
-}).WithParameterValidation();
+}).WithParameterValidation().Produces(201).ProducesValidationProblem();
 tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) =>
 {
     // check model dto using validation library 
     return Service.Update(id, model) ? TypedResults.NoContent()
     : Results.Problem(statusCode: 404, detail: "Task Not Found");
-}).WithParameterValidation();
+}).WithParameterValidation().Produces(204).ProducesValidationProblem(400);
 tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
@@ -62,7 +72,7 @@ tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService 
 
     return Service.ExtendTime(id, model) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
-});
+}).WithTags("Tasks").Produces(204).Produces(404);
 tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
     if (model.NewStatus == null || !Enum.IsDefined(typeof(ToDoListApp.Models.TaskStatus) , model.NewStatus.Value))  
@@ -70,14 +80,15 @@ tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
  
     return Service.ChangeStatus(id, model) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
-});
+}).Produces(204).Produces(404);
 tasks.MapDelete("/{id}", (int id, ITaskService Service) =>
 {
     return Service.Delete(id) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
-});
+}).Produces(204).Produces(404);
 
 RouteGroupBuilder notes = taskAppApi.MapGroup("/notes");
+notes.WithTags("Notes");
 notes.MapGet("/task/{taskId}", (int taskId, INoteService Service) =>
 {
     var notes = Service.GetTaskNotes(taskId);
@@ -111,6 +122,7 @@ notes.MapDelete("/{id}", (int id, INoteService Service) =>
 });
 
 RouteGroupBuilder tags = taskAppApi.MapGroup("/tags");
+tags.WithTags("Tags");
 tags.MapGet("/", (ITagService Service) =>
 {
     // get user id from token and pass it to service soon
@@ -149,6 +161,9 @@ tags.MapDelete("/{id}", (int id, ITagService Service) =>
 
 //app.MapHealthChecks("/healthz");
 ///
+
+app.UseSwagger();
+app.UseSwaggerUI(); 
 
 app.Run();
 
