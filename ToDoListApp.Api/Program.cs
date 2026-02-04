@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
@@ -7,18 +11,29 @@ using ToDoListApp.Services.Dto;
 using ToDoListApp.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.Services.AddHealthChecks();
-
 
 // work with swagger
-builder.Services.AddEndpointsApiExplorer();   
-builder.Services.AddSwaggerGen(x => x.SwaggerDoc("v1" , new Microsoft.OpenApi.OpenApiInfo
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(x =>
 {
-    Title = "To-Do-List App" , 
-    Version = "1.0", 
-    Description = "An API to manage your To-Do List",
-})
-);
+    x.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "To-Do-List App",
+        Version = "1.0",
+        Description = "An API to manage your To-Do List"
+    });
+
+    x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT token"
+    });
+  
+});
 // add jwt authentication 
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddAuthorization();
