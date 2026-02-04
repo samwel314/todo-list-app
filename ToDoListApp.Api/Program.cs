@@ -9,6 +9,7 @@ using ToDoListApp.Services.Implementation;
 var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddHealthChecks();
 
+
 // work with swagger
 builder.Services.AddEndpointsApiExplorer();   
 builder.Services.AddSwaggerGen(x => x.SwaggerDoc("v1" , new Microsoft.OpenApi.OpenApiInfo
@@ -18,6 +19,9 @@ builder.Services.AddSwaggerGen(x => x.SwaggerDoc("v1" , new Microsoft.OpenApi.Op
     Description = "An API to manage your To-Do List",
 })
 );
+// add jwt authentication 
+builder.Services.AddAuthentication().AddBearerToken();
+builder.Services.AddAuthorization();
 
 // to make all responses standard
 builder.Services.AddProblemDetails(); 
@@ -161,7 +165,9 @@ tags.MapDelete("/{id}", (int id, ITagService Service) =>
 
 //app.MapHealthChecks("/healthz");
 ///
-
+app.UseRouting(); 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI(); 
 
