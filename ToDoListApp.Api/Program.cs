@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(x => x.SwaggerDoc("v1" , new Microsoft.OpenApi.Op
 })
 );
 // add jwt authentication 
-builder.Services.AddAuthentication().AddBearerToken();
+builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddAuthorization();
 
 // to make all responses standard
@@ -38,7 +38,7 @@ var app = builder.Build();
 // map endpoints 
 RouteGroupBuilder taskAppApi = app.MapGroup("/api");
 // task endPoints 
-RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks");
+RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks").RequireAuthorization();
 tasks.WithTags("Tasks");    
 tasks.MapGet("/", (ITaskService Service) =>
 {
