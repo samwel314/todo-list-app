@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,7 +7,7 @@ using ToDoListApp.Models;
 
 namespace ToDoListApp.Data
 {
-    public class AppDBContext : DbContext
+    public class AppDBContext : IdentityDbContext<User>
     {
         public AppDBContext(DbContextOptions options) : base(options)
         {
