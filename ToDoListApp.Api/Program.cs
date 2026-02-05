@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -6,6 +7,7 @@ using Microsoft.OpenApi;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
+using ToDoListApp.Models;
 using ToDoListApp.Services;
 using ToDoListApp.Services.Dto;
 using ToDoListApp.Services.Implementation;
@@ -49,6 +51,21 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<INoteService, NoteService>();  
 builder.Services.AddScoped<ITagService, TagService>();
+
+builder.Services.AddIdentity<User, IdentityRole>(o =>
+{
+    o.Password.RequireDigit = true;
+    o.Password.RequireLowercase = false;
+    o.Password.RequireUppercase = false;
+    o.Password.RequireNonAlphanumeric = false;
+    o.Password.RequiredLength = 10;
+    o.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<AppDBContext>()
+.AddDefaultTokenProviders();
+
+
+
 var app = builder.Build();
 // map endpoints 
 RouteGroupBuilder taskAppApi = app.MapGroup("/api");
