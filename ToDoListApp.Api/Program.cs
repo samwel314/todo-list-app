@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
@@ -34,14 +32,14 @@ builder.Services.AddSwaggerGen(x =>
         In = ParameterLocation.Header,
         Description = "Enter JWT token"
     });
-  
+
 });
 // add jwt authentication 
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddAuthorization();
 
 // to make all responses standard
-builder.Services.AddProblemDetails(); 
+builder.Services.AddProblemDetails();
 // Work With DB 
 
 string ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("No Connection Found");
@@ -49,8 +47,9 @@ builder.Services.AddDbContext<AppDBContext>(opt => opt.UseSqlServer(ConnectionSt
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Business Logic
 builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<INoteService, NoteService>();  
+builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<ITagService, TagService>();
+
 
 builder.Services.AddIdentity<User, IdentityRole>(o =>
 {
@@ -64,17 +63,28 @@ builder.Services.AddIdentity<User, IdentityRole>(o =>
 .AddEntityFrameworkStores<AppDBContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 var app = builder.Build();
 // map endpoints 
 RouteGroupBuilder taskAppApi = app.MapGroup("/api");
+taskAppApi.MapPost("/Register",  async (UserRegisterDto model, IUserService Service) =>
+{
+    var result = await Service.RegisterNewUser(model); 
+    if (result.Succeeded)
+        return TypedResults.Created();
+    var errors = string.Join(", ", result.Errors.Select(r => r.Description));
+
+    return Results.Problem( detail : errors , statusCode : 400);
+}).WithParameterValidation();
+
 // task endPoints 
 RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks").RequireAuthorization();
-tasks.WithTags("Tasks");    
+tasks.WithTags("Tasks");
 tasks.MapGet("/", (ITaskService Service) =>
 {
-   return TypedResults.Ok(Service.GetAll());
+    return TypedResults.Ok(Service.GetAll());
 });
 tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
 {
@@ -84,16 +94,16 @@ tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
 
     return TypedResults.Ok(task);
 }).WithName("GetTaskById").Produces<TaskDetailsDto>(200).Produces(404);
-tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service  , LinkGenerator link) =>
+tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service, LinkGenerator link) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
         return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes");
-   
-    var taskId = Service.Create(model); 
+
+    var taskId = Service.Create(model);
     if (taskId == 0)
         return Results.Problem(statusCode: 404, detail: "This Tag Not Found");
     var url = link.GetPathByName("GetTaskById", new { id = taskId });
-    return  TypedResults.Created(url);
+    return TypedResults.Created(url);
 }).WithParameterValidation().Produces(201).ProducesValidationProblem();
 tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) =>
 {
@@ -104,16 +114,16 @@ tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) 
 tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
-        return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes"); 
+        return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes");
 
     return Service.ExtendTime(id, model) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).WithTags("Tasks").Produces(204).Produces(404);
 tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
 {
-    if (model.NewStatus == null || !Enum.IsDefined(typeof(ToDoListApp.Models.TaskStatus) , model.NewStatus.Value))  
+    if (model.NewStatus == null || !Enum.IsDefined(typeof(ToDoListApp.Models.TaskStatus), model.NewStatus.Value))
         return Results.Problem(statusCode: 400, detail: "This Value Is Not Defined ");
- 
+
     return Service.ChangeStatus(id, model) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).Produces(204).Produces(404);
@@ -128,8 +138,8 @@ notes.WithTags("Notes");
 notes.MapGet("/task/{taskId}", (int taskId, INoteService Service) =>
 {
     var notes = Service.GetTaskNotes(taskId);
-    return notes != null ?  TypedResults.Ok(notes) : 
-    Results.Problem(statusCode : 404 , detail: "This Task Not Found");
+    return notes != null ? TypedResults.Ok(notes) :
+    Results.Problem(statusCode: 404, detail: "This Task Not Found");
 });
 notes.MapGet("/{id}", (int id, INoteService Service) =>
 {
@@ -137,11 +147,11 @@ notes.MapGet("/{id}", (int id, INoteService Service) =>
     return note != null ? TypedResults.Ok(note) :
     Results.Problem(statusCode: 404, detail: "This Note Not Found");
 }).WithName("GetNoteById");
-notes.MapPost("/task/{taskId}", (int taskId, CreateUpdateNoteDto model ,  INoteService Service , LinkGenerator link ) =>
+notes.MapPost("/task/{taskId}", (int taskId, CreateUpdateNoteDto model, INoteService Service, LinkGenerator link) =>
 {
     // check model dto  Progress_Note
-    var noteId = Service.Create( taskId , model);
-    var url =  link.GetPathByName("GetNoteById", new { id = noteId }); 
+    var noteId = Service.Create(taskId, model);
+    var url = link.GetPathByName("GetNoteById", new { id = noteId });
     return noteId != 0 ? TypedResults.Created(url) :
     Results.Problem(statusCode: 404, detail: "This Task Not Found");
 }).WithParameterValidation();
@@ -172,7 +182,7 @@ tags.MapGet("/{id}", (int id, ITagService Service) =>
     return tag != null ? TypedResults.Ok(tag)
     : Results.Problem(statusCode: 404, detail: "This Tag Not Found");
 }).WithName("GetTagById");
-tags.MapPost("/", (CreateUpdateTagDto model, ITagService Service , LinkGenerator link) =>
+tags.MapPost("/", (CreateUpdateTagDto model, ITagService Service, LinkGenerator link) =>
 {
     // get user id from token and pass it to service soon
     // model.UserId = "";
@@ -197,17 +207,17 @@ tags.MapDelete("/{id}", (int id, ITagService Service) =>
 
 //app.MapHealthChecks("/healthz");
 ///
-app.UseRouting(); 
+app.UseRouting();
+app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
-app.UseSwaggerUI(); 
-
+app.UseSwaggerUI();
 app.Run();
 
-bool IsValidExpectedEndDate(DateTime ? time)
+bool IsValidExpectedEndDate(DateTime? time)
 {
-    if (time == null )
+    if (time == null)
         return false;
     return time >= DateTime.Now.AddMinutes(30);
 }

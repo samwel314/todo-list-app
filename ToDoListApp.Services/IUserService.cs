@@ -5,6 +5,6 @@ namespace ToDoListApp.Services
 {
     public interface IUserService
     {
-        IdentityResult RegisterNewUser(UserRegisterDto model); 
+        Task<IdentityResult> RegisterNewUser(UserRegisterDto model); 
     }
 }

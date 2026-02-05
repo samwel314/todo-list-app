@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Models;
 using ToDoListApp.Services.Dto;
@@ -17,17 +18,17 @@ namespace ToDoListApp.Services.Implementation
             _configuration = configuration;
         }
 
-        public IdentityResult RegisterNewUser(UserRegisterDto model)
+        public async Task<IdentityResult> RegisterNewUser(UserRegisterDto model)
         {
            var user = new User
             {
                 FirstName = model.FirstName!,
                 LastName = model.LastName!,
-                UserName = model.UserName,
-                PhoneNumber = model.PhoneNumber
-            };
+                Email = model.Email!,
+                UserName = model.Email!
+           };
             
-            var result = _userManager.CreateAsync(user, model.Password!).Result;
+            var result = await _userManager.CreateAsync(user, model.Password!);
             return result;
         }
     }
