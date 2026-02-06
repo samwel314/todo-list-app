@@ -18,6 +18,11 @@ namespace ToDoListApp.Services.Implementation
             _configuration = configuration;
         }
 
+        public Task<string> CreateToken()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IdentityResult> RegisterNewUser(UserRegisterDto model)
         {
            var user = new User
@@ -31,6 +36,18 @@ namespace ToDoListApp.Services.Implementation
             var result = await _userManager.CreateAsync(user, model.Password!);
             return result;
         }
+
+        public async Task<bool> ValidateUser(UserLoginDto model)
+        {
+            var isValid = false;
+            var user = await  _userManager.FindByEmailAsync(model.Email!);
+            if ( user is not null)
+            {
+                isValid = await _userManager.CheckPasswordAsync(user, model.Password!); 
+            }
+            return isValid;
+        }
+
     }
    
 }
