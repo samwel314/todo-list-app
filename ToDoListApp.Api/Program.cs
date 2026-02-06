@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -84,7 +85,7 @@ builder.Services.AddAuthentication(opt =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = false,
+        ValidateIssuerSigningKey = true,
         ClockSkew = TimeSpan.Zero,
         ValidAudience = jwtSettings["ValidAudiences"],
         ValidIssuer = jwtSettings["validIssuer"],
@@ -173,7 +174,7 @@ tasks.MapDelete("/{id}", (int id, ITaskService Service) =>
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).Produces(204).Produces(404);
 
-RouteGroupBuilder notes = taskAppApi.MapGroup("/notes");
+RouteGroupBuilder notes = taskAppApi.MapGroup("/notes").RequireAuthorization();
 notes.WithTags("Notes");
 notes.MapGet("/task/{taskId}", (int taskId, INoteService Service) =>
 {
@@ -207,7 +208,7 @@ notes.MapDelete("/{id}", (int id, INoteService Service) =>
 : Results.Problem(statusCode: 404, detail: "This Note Not Found");
 });
 
-RouteGroupBuilder tags = taskAppApi.MapGroup("/tags");
+RouteGroupBuilder tags = taskAppApi.MapGroup("/tags").RequireAuthorization();
 tags.WithTags("Tags");
 tags.MapGet("/", (ITagService Service) =>
 {
