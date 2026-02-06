@@ -85,6 +85,8 @@ namespace ToDoListApp.Services.Implementation
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials,List<Claim> claims)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
+
+            Console.WriteLine(DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["expires"])));
             var tokenOptions = new JwtSecurityToken
             (
             issuer: jwtSettings["validIssuer"],
@@ -93,6 +95,7 @@ namespace ToDoListApp.Services.Implementation
             expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["expires"])),
             signingCredentials: signingCredentials
             );
+
             return tokenOptions;
         }
     }

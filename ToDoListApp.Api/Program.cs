@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
@@ -40,26 +41,8 @@ builder.Services.AddSwaggerGen(x =>
 // add jwt authentication 
 
 // get jwt settings 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings"); 
-builder.Services.AddAuthentication(opt =>
-{
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(otp =>
-{
-    otp.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true , 
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 
-        ValidAudience = jwtSettings["ValidAudiences"],
-        ValidIssuer = jwtSettings["validIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
-    }; 
-
-});
 builder.Services.AddAuthorization();
 
 // to make all responses standard
@@ -87,8 +70,35 @@ builder.Services.AddIdentity<User, IdentityRole>(o =>
 .AddEntityFrameworkStores<AppDBContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IUserService, UserService>();
+// لازم بعد بعد identity services عشان موضع authentication schema 
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(otp =>
+{
+    otp.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = false,
+        ClockSkew = TimeSpan.Zero,
+        ValidAudience = jwtSettings["ValidAudiences"],
+        ValidIssuer = jwtSettings["validIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+    };
+    //otp.Events = new JwtBearerEvents
+    //{
+    //    OnAuthenticationFailed = context =>
+    //    {
+    //        Console.WriteLine(context.Exception.Message);
+    //        return Task.CompletedTask;
+    //    }
+    //};
+});
 
 var app = builder.Build();
 // map endpoints 
@@ -102,7 +112,13 @@ taskAppApi.MapPost("/Register",  async (UserRegisterDto model, IUserService Serv
 
     return Results.Problem( detail : errors , statusCode : 400);
 }).WithParameterValidation();
-
+taskAppApi.MapPost("/Login", async (UserLoginDto model, IUserService service) =>
+{
+    var result = await service.ValidateUser(model);
+    if (result.IsAuthenticated)
+        return TypedResults.Ok(result); 
+    return Results.Problem(detail: result.Message, statusCode: 401);
+}).WithParameterValidation();
 // task endPoints 
 RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks").RequireAuthorization();
 tasks.WithTags("Tasks");
