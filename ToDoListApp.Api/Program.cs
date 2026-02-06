@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Text;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
@@ -35,7 +38,28 @@ builder.Services.AddSwaggerGen(x =>
 
 });
 // add jwt authentication 
-builder.Services.AddAuthentication().AddJwtBearer();
+
+// get jwt settings 
+var jwtSettings = builder.Configuration.GetSection("JwtSettings"); 
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(otp =>
+{
+    otp.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true , 
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidAudience = jwtSettings["ValidAudiences"],
+        ValidIssuer = jwtSettings["validIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+    }; 
+
+});
 builder.Services.AddAuthorization();
 
 // to make all responses standard
