@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Security.Claims;
 using System.Text;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
@@ -210,9 +211,9 @@ notes.MapDelete("/{id}", (int id, INoteService Service) =>
 
 RouteGroupBuilder tags = taskAppApi.MapGroup("/tags").RequireAuthorization();
 tags.WithTags("Tags");
-tags.MapGet("/", (ITagService Service) =>
+tags.MapGet("/", (ITagService Service , ClaimsPrincipal user) =>
 {
-    // get user id from token and pass it to service soon
+    var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     var tags = Service.GetUserTags("");
     return TypedResults.Ok(tags);
 });

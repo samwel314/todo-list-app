@@ -51,9 +51,8 @@ namespace ToDoListApp.Services.Implementation
         }
         public IEnumerable<TagDto>? GetUserTags(string userId)
         {
-            // get user id from token claims in api layer
             var tagsFromDB =
-                _db.Tags.GetAll().Select(t=> new TagDto
+                _db.Tags.GetAll(t => t.UserId == userId).Select(t=> new TagDto
                 {
                     TagId = t.TagId,
                     TagName = t.TagName
