@@ -31,10 +31,10 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return taskToDB.TaskId;
         }
-        public bool Update(int id ,  CreateUpdateTaskDTo dto)
+        public bool Update(int id ,  CreateUpdateTaskDTo dto, string userId)
         {
             TaskToDO? taskFromDB =
-            _db.Tasks.Get(t => t.TaskId == id, true);
+            _db.Tasks.Get(t => t.TaskId == id && t.UserId == userId, true);
             if (taskFromDB == null)
                 return false;
             taskFromDB.Title = dto.Title;   
@@ -77,10 +77,10 @@ namespace ToDoListApp.Services.Implementation
             });
             return tasksFromDb.ToList();
         }
-        public bool ExtendTime (int id , ChangeStatusDto dto )
+        public bool ExtendTime (int id , ChangeStatusDto dto, string userId)
         {
             TaskToDO? taskFromDB =
-            _db.Tasks.Get(t => t.TaskId == id, true);
+            _db.Tasks.Get(t => t.TaskId == id && t.UserId == userId, true);
             if (taskFromDB == null ||
            taskFromDB.Status == Models.TaskStatus.Completed)
                 return false;
@@ -90,10 +90,10 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return true; 
         }
-        public bool ChangeStatus (int id, ChangeStatusDto dto)
+        public bool ChangeStatus (int id, ChangeStatusDto dto, string userId)
         {
             TaskToDO? taskFromDB =
-                _db.Tasks.Get(t => t.TaskId == id, true);
+                _db.Tasks.Get(t => t.TaskId == id && t.UserId == userId, true);
             // user cannot change status of completed task or set any status to timeout the system handles timeout
             if (taskFromDB == null ||
                 taskFromDB.Status == Models.TaskStatus.Completed 
@@ -115,10 +115,10 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return true;    
         }
-        public bool Delete(int id)
+        public bool Delete(int id , string userId)
         {
             TaskToDO? taskFromDB =
-                _db.Tasks.Get(t => t.TaskId == id);
+                _db.Tasks.Get(t => t.TaskId == id && t.UserId == userId);
             if (taskFromDB == null)
                 return false;
             _db.Tasks.Delete(taskFromDB); 

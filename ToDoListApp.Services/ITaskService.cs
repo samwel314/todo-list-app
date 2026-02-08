@@ -10,10 +10,10 @@ namespace ToDoListApp.Services
     {
         IEnumerable<TaskDto> GetAll(string userId);
         TaskDetailsDto ? Get(int id , string userId);
-        bool Update(int id, CreateUpdateTaskDTo dto);
+        bool Update(int id, CreateUpdateTaskDTo dto , string userId);
         int Create(CreateUpdateTaskDTo dto , string userId);
-        bool ExtendTime(int id, ChangeStatusDto dto);
-        bool ChangeStatus(int id, ChangeStatusDto dto);
-        bool Delete(int id);
+        bool ExtendTime(int id, ChangeStatusDto dto , string userId);
+        bool ChangeStatus(int id, ChangeStatusDto dto, string userId);
+        bool Delete(int id , string userId);
     }
 }

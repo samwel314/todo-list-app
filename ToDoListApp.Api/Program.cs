@@ -149,31 +149,34 @@ tasks.MapPost("/", (CreateUpdateTaskDTo model ,ClaimsPrincipal user , ITaskServi
     var url = link.GetPathByName("GetTaskById", new { id = taskId });
     return TypedResults.Created(url);
 }).WithParameterValidation().Produces(201).ProducesValidationProblem();
-tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model, ITaskService Service) =>
+tasks.MapPut("/{id}", (int id, CreateUpdateTaskDTo model , ClaimsPrincipal user , ITaskService Service) =>
 {
-    // check model dto using validation library 
-    return Service.Update(id, model) ? TypedResults.NoContent()
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+    return Service.Update(id, model , userId) ? TypedResults.NoContent()
     : Results.Problem(statusCode: 404, detail: "Task Not Found");
 }).WithParameterValidation().Produces(204).ProducesValidationProblem(400);
-tasks.MapPatch("/{id}/ExtendTime", (int id, ChangeStatusDto model, ITaskService Service) =>
+tasks.MapPatch("/{id}/ExtendTime", (int id,ClaimsPrincipal user , ChangeStatusDto model, ITaskService Service) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
         return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes");
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-    return Service.ExtendTime(id, model) ? TypedResults.NoContent()
+    return Service.ExtendTime(id, model , userId) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).WithTags("Tasks").Produces(204).Produces(404);
-tasks.MapPatch("/{id}", (int id, ChangeStatusDto model, ITaskService Service) =>
+tasks.MapPatch("/{id}", (int id, ClaimsPrincipal user, ChangeStatusDto model, ITaskService Service) =>
 {
     if (model.NewStatus == null || !Enum.IsDefined(typeof(ToDoListApp.Models.TaskStatus), model.NewStatus.Value))
         return Results.Problem(statusCode: 400, detail: "This Value Is Not Defined ");
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-    return Service.ChangeStatus(id, model) ? TypedResults.NoContent()
+    return Service.ChangeStatus(id, model, userId) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).Produces(204).Produces(404);
-tasks.MapDelete("/{id}", (int id, ITaskService Service) =>
+tasks.MapDelete("/{id}", (int id,ClaimsPrincipal user, ITaskService Service) =>
 {
-    return Service.Delete(id) ? TypedResults.NoContent()
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+    return Service.Delete(id , userId) ? TypedResults.NoContent()
 : Results.Problem(statusCode: 404, detail: "Task Not Found Or This Action Not Allowed");
 }).Produces(204).Produces(404);
 
