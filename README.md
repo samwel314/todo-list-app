@@ -205,4 +205,5 @@ This project has **two branches**:
 💡 Notes
 - You can **swap branches anytime** to test the system with or without authentication  
 - Both branches share the same core business logic
+<img width="990" height="609" alt="image" src="https://github.com/user-attachments/assets/e6f5d567-c72b-4dd8-b1c0-93bceea1034b" />
 
