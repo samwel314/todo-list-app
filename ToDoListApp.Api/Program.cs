@@ -217,33 +217,34 @@ tags.MapGet("/", (ITagService Service , ClaimsPrincipal user) =>
     var tags = Service.GetUserTags("");
     return TypedResults.Ok(tags);
 });
-tags.MapGet("/{id}", (int id, ITagService Service) =>
+tags.MapGet("/{id}", (int id, ITagService Service , ClaimsPrincipal user) =>
 {
     // get user id from token and pass it to service soon
-    var tag = Service.Get(id);
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value; 
+    var tag = Service.Get(id , userId);
     return tag != null ? TypedResults.Ok(tag)
     : Results.Problem(statusCode: 404, detail: "This Tag Not Found");
 }).WithName("GetTagById");
-tags.MapPost("/", (CreateUpdateTagDto model, ITagService Service, LinkGenerator link) =>
+tags.MapPost("/", (CreateUpdateTagDto model,ClaimsPrincipal user ,  ITagService Service, LinkGenerator link) =>
 {
-    // get user id from token and pass it to service soon
-    // model.UserId = "";
+    model.UserId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
     var tagId = Service.Create(model);
     var url = link.GetPathByName("GetTagById", new { id = tagId });
-    return tagId != 0 ? TypedResults.Created($"api/tags/{tagId}") :
-    Results.Problem(statusCode: 404, detail: "This tag Not Found");
+    if (tagId == -1)
+        return Results.Problem(statusCode: 400, detail: $"You Already Have {model.TagName} Tag "); 
+    return tagId != 0 ? TypedResults.Created(url) :
+    Results.Problem(statusCode: 400, detail: "Some Error , please try later");
 });
-tags.MapPut("/{id}", (int id, CreateUpdateTagDto model, ITagService Service) =>
+tags.MapPut("/{id}", (int id,ClaimsPrincipal user , CreateUpdateTagDto model, ITagService Service) =>
 {
-    // get user id from token and pass it to service soon
-    // model.UserId = "";
+    model.UserId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
     return Service.Update(id, model) ? TypedResults.NoContent() :
     Results.Problem(statusCode: 404, detail: "This tag Not Found");
 });
-tags.MapDelete("/{id}", (int id, ITagService Service) =>
+tags.MapDelete("/{id}", (int id, ClaimsPrincipal user,  ITagService Service) =>
 {
-    // get user id from token and pass it to service soon
-    return Service.Delete(id) ? TypedResults.NoContent() :
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+    return Service.Delete(id , userId) ? TypedResults.NoContent() :
     Results.Problem(statusCode: 404, detail: "This tag Not Found");
 });
 
