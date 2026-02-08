@@ -214,7 +214,7 @@ tags.WithTags("Tags");
 tags.MapGet("/", (ITagService Service , ClaimsPrincipal user) =>
 {
     var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    var tags = Service.GetUserTags("");
+    var tags = Service.GetUserTags(id!);
     return TypedResults.Ok(tags);
 });
 tags.MapGet("/{id}", (int id, ITagService Service , ClaimsPrincipal user) =>
