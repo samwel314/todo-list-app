@@ -43,9 +43,10 @@ namespace ToDoListApp.Services.Implementation
             _db.Save();
             return true;    
         }
-        public TaskDetailsDto? Get(int id)
+        public TaskDetailsDto? Get(int id , string userId)
         {
-            var taskFromDB = _db.Tasks.Get(t => t.TaskId == id , Include :"Tag");
+            var taskFromDB = _db.Tasks.Get
+                (t => t.TaskId == id && t.UserId == userId , Include :"Tag");
             if (taskFromDB == null) 
                 return null;    
             var taskDto = new TaskDetailsDto()

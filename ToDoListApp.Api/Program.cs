@@ -129,9 +129,10 @@ tasks.MapGet("/", (ClaimsPrincipal user, ITaskService Service) =>
     var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
     return TypedResults.Ok(Service.GetAll(userId));
 });
-tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
+tasks.MapGet("/{Id}", (int Id, ClaimsPrincipal user, ITaskService Service) =>
 {
-    var task = Service.Get(Id);
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+    var task = Service.Get(Id , userId);
     if (task == null)
         return Results.Problem(statusCode: 404, detail: "Task not found");
 

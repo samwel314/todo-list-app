@@ -9,7 +9,7 @@ namespace ToDoListApp.Services
     public interface ITaskService
     {
         IEnumerable<TaskDto> GetAll(string userId);
-        TaskDetailsDto ? Get(int id);
+        TaskDetailsDto ? Get(int id , string userId);
         bool Update(int id, CreateUpdateTaskDTo dto);
         int Create(CreateUpdateTaskDTo dto , string userId);
         bool ExtendTime(int id, ChangeStatusDto dto);
