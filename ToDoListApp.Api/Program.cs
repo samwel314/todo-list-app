@@ -124,9 +124,10 @@ taskAppApi.MapPost("/Login", async (UserLoginDto model, IUserService service) =>
 // task endPoints 
 RouteGroupBuilder tasks = taskAppApi.MapGroup("/tasks").RequireAuthorization();
 tasks.WithTags("Tasks");
-tasks.MapGet("/", (ITaskService Service) =>
+tasks.MapGet("/", (ClaimsPrincipal user, ITaskService Service) =>
 {
-    return TypedResults.Ok(Service.GetAll());
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+    return TypedResults.Ok(Service.GetAll(userId));
 });
 tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
 {

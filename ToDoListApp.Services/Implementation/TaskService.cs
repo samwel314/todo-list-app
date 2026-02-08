@@ -65,9 +65,9 @@ namespace ToDoListApp.Services.Implementation
 
             return taskDto; 
         }
-        public IEnumerable<TaskDto> GetAll()
+        public IEnumerable<TaskDto> GetAll(string userId)
         {
-           var tasksFromDb =  _db.Tasks.GetAll().Select(t=> new TaskDto
+           var tasksFromDb =  _db.Tasks.GetAll(t=>t.UserId == userId).Select(t=> new TaskDto
             {
                 TaskId = t.TaskId,  
                 Title = t.Title,    
