@@ -30,7 +30,7 @@ namespace ToDoListApp.Services.Implementation
         public bool Delete(int id , string userId)
         {
             var tagFromDB =
-                _db.Tags.Get(t => t.TagId == id);
+                _db.Tags.Get(t => t.TagId == id && t.UserId == userId);
             if (tagFromDB == null)
                 return false;
             _db.Tags.Delete(tagFromDB); 
