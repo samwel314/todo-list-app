@@ -11,7 +11,7 @@ namespace ToDoListApp.Services
         IEnumerable<TaskDto> GetAll();
         TaskDetailsDto ? Get(int id);
         bool Update(int id, CreateUpdateTaskDTo dto);
-        int Create(CreateUpdateTaskDTo dto);
+        int Create(CreateUpdateTaskDTo dto , string userId);
         bool ExtendTime(int id, ChangeStatusDto dto);
         bool ChangeStatus(int id, ChangeStatusDto dto);
         bool Delete(int id);

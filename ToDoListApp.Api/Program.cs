@@ -136,12 +136,12 @@ tasks.MapGet("/{Id}", (int Id, ITaskService Service) =>
 
     return TypedResults.Ok(task);
 }).WithName("GetTaskById").Produces<TaskDetailsDto>(200).Produces(404);
-tasks.MapPost("/", (CreateUpdateTaskDTo model, ITaskService Service, LinkGenerator link) =>
+tasks.MapPost("/", (CreateUpdateTaskDTo model ,ClaimsPrincipal user , ITaskService Service, LinkGenerator link) =>
 {
     if (!IsValidExpectedEndDate(model.ExpectedEndDate))
         return Results.Problem(statusCode: 400, detail: "This Date Must be after 30 Minutes");
-
-    var taskId = Service.Create(model);
+    var userId = user.FindFirst(ClaimTypes.NameIdentifier)!.Value; 
+    var taskId = Service.Create(model , userId);
     if (taskId == 0)
         return Results.Problem(statusCode: 404, detail: "This Tag Not Found");
     var url = link.GetPathByName("GetTaskById", new { id = taskId });

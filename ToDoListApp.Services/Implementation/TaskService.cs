@@ -14,10 +14,9 @@ namespace ToDoListApp.Services.Implementation
         {
             _db = db;
         }
-        public int Create(CreateUpdateTaskDTo dto)
+        public int Create(CreateUpdateTaskDTo dto , string userId)
         {
-            // check if tag exists and soon we will check if this tag belongs to this user
-            var tagFromDb = _db.Tags.GetAll(t => t.TagId == dto.TagId).Any();
+            var tagFromDb = _db.Tags.GetAll(t => t.TagId == dto.TagId && t.UserId == userId).Any();
             if (!tagFromDb)
                 return 0; 
             var taskToDB = new TaskToDO()
@@ -25,6 +24,7 @@ namespace ToDoListApp.Services.Implementation
                 Title = dto.Title,
                 Description = dto.Description,
                 TagId = dto.TagId,
+                UserId = userId,
                 ExpectedEndDate = dto.ExpectedEndDate!.Value,
             };
             _db.Tasks.Add(taskToDB);
