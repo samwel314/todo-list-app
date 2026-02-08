@@ -26,5 +26,8 @@ namespace ToDoListApp.Models
         public int TagId { get; set; }
         [ForeignKey("TagId")]
         public Tag Tag { get; set; } = null!;
+        public string UserId { get; set; } = null!;
+        [ForeignKey("UserId")]
+        public User User { get; set; } = null!;
     }
 }
