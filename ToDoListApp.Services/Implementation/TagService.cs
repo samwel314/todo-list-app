@@ -1,4 +1,5 @@
-﻿using ToDoListApp.Data.Repository;
+﻿using System.Xml;
+using ToDoListApp.Data.Repository;
 using ToDoListApp.Models;
 using ToDoListApp.Services.Dto;
 
@@ -13,33 +14,34 @@ namespace ToDoListApp.Services.Implementation
         }
         public int Create(CreateUpdateTagDto dto)
         {
-            // we check user her api
-            // layer will provide user id from token claims
-
+          var haveTagWithThisName =  _db.Tags.GetAll().Any(t => t.TagName.ToLower() == dto.TagName.ToLower() && t.UserId == dto.UserId);
+            if (haveTagWithThisName)
+                return -1;
             var tag = new Tag
             {
                 TagName = dto.TagName,
-              //  UserId = dto.UserId
+                UserId = dto.UserId!
             };
             _db.Tags.Add(tag); 
             _db.Save();
 
             return tag.TagId;   
         }
-        public bool Delete(int id)
+        public bool Delete(int id , string userId)
         {
             var tagFromDB =
-                _db.Tags.Get(t => t.TagId == id);
+                _db.Tags.Get(t => t.TagId == id && t.UserId == userId);
             if (tagFromDB == null)
                 return false;
             _db.Tags.Delete(tagFromDB); 
             _db.Save(); 
             return true;    
         }
-        public TagDto? Get(int id)
+        public TagDto? Get(int id , string userId )
         {
+            // we can replace this by authorization by resource 
             var tagFromDB =
-               _db.Tags.Get(t => t.TagId == id);
+               _db.Tags.Get(t => t.TagId == id && t.UserId == userId);
             if (tagFromDB == null)
                 return null;
             var tagDto = new TagDto
@@ -51,9 +53,8 @@ namespace ToDoListApp.Services.Implementation
         }
         public IEnumerable<TagDto>? GetUserTags(string userId)
         {
-            // get user id from token claims in api layer
             var tagsFromDB =
-                _db.Tags.GetAll().Select(t=> new TagDto
+                _db.Tags.GetAll(t => t.UserId == userId).Select(t=> new TagDto
                 {
                     TagId = t.TagId,
                     TagName = t.TagName
@@ -63,8 +64,8 @@ namespace ToDoListApp.Services.Implementation
         public bool Update(int id, CreateUpdateTagDto dto)
         {
             var tagFromDB =
-                _db.Tags.Get(t => t.TagId == id ,Tracking : true);
-            if (tagFromDB == null /*|| tagFromDB.UserId * != dto.userId  */)
+                _db.Tags.Get(t => t.TagId == id && t.UserId == dto.UserId ,Tracking : true );
+            if (tagFromDB == null)
                 return false;
             tagFromDB.TagName = dto.TagName; 
             _db.Save(); 

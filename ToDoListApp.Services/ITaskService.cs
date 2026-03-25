@@ -8,12 +8,12 @@ namespace ToDoListApp.Services
 {
     public interface ITaskService
     {
-        IEnumerable<TaskDto> GetAll();
-        TaskDetailsDto ? Get(int id);
-        bool Update(int id, CreateUpdateTaskDTo dto);
-        int Create(CreateUpdateTaskDTo dto);
-        bool ExtendTime(int id, ChangeStatusDto dto);
-        bool ChangeStatus(int id, ChangeStatusDto dto);
-        bool Delete(int id);
+        IEnumerable<TaskDto> GetAll(string userId);
+        TaskDetailsDto ? Get(int id , string userId);
+        bool Update(int id, CreateUpdateTaskDTo dto , string userId);
+        int Create(CreateUpdateTaskDTo dto , string userId);
+        bool ExtendTime(int id, ChangeStatusDto dto , string userId);
+        bool ChangeStatus(int id, ChangeStatusDto dto, string userId);
+        bool Delete(int id , string userId);
     }
 }

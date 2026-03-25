@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ToDoListApp.Data\ToDoListApp.Data.csproj" />
     <ProjectReference Include="..\ToDoListApp.Models\ToDoListApp.Models.csproj" />
   </ItemGroup>

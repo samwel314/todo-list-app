@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDoListApp.Data;
 
@@ -11,9 +12,11 @@ using ToDoListApp.Data;
 namespace ToDoListApp.Data.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260205004910_CreatingIdentityTables")]
+    partial class CreatingIdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,6 +182,36 @@ namespace ToDoListApp.Data.Migrations
                     b.HasIndex("TaskId");
 
                     b.ToTable("Notes");
+
+                    b.HasData(
+                        new
+                        {
+                            NoteId = 1,
+                            CreatedOrUpdatedAt = new DateTime(2025, 1, 2, 10, 0, 0, 0, DateTimeKind.Unspecified),
+                            Progress_Note = "Started reading EF Core documentation",
+                            TaskId = 1
+                        },
+                        new
+                        {
+                            NoteId = 2,
+                            CreatedOrUpdatedAt = new DateTime(2025, 1, 3, 12, 0, 0, 0, DateTimeKind.Unspecified),
+                            Progress_Note = "Implemented GetAll with pagination",
+                            TaskId = 2
+                        },
+                        new
+                        {
+                            NoteId = 3,
+                            CreatedOrUpdatedAt = new DateTime(2024, 12, 28, 18, 0, 0, 0, DateTimeKind.Unspecified),
+                            Progress_Note = "All unit tests passed successfully",
+                            TaskId = 3
+                        },
+                        new
+                        {
+                            NoteId = 4,
+                            CreatedOrUpdatedAt = new DateTime(2024, 12, 21, 9, 0, 0, 0, DateTimeKind.Unspecified),
+                            Progress_Note = "Refactoring stopped because deadline missed",
+                            TaskId = 4
+                        });
                 });
 
             modelBuilder.Entity("ToDoListApp.Models.Tag", b =>
@@ -193,15 +226,46 @@ namespace ToDoListApp.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("TagId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Tags");
+
+                    b.HasData(
+                        new
+                        {
+                            TagId = 1,
+                            TagName = "Work"
+                        },
+                        new
+                        {
+                            TagId = 2,
+                            TagName = "Personal"
+                        },
+                        new
+                        {
+                            TagId = 3,
+                            TagName = "Study"
+                        },
+                        new
+                        {
+                            TagId = 4,
+                            TagName = "Urgent"
+                        },
+                        new
+                        {
+                            TagId = 5,
+                            TagName = "Home"
+                        },
+                        new
+                        {
+                            TagId = 6,
+                            TagName = "Shopping"
+                        },
+                        new
+                        {
+                            TagId = 7,
+                            TagName = "Health"
+                        });
                 });
 
             modelBuilder.Entity("ToDoListApp.Models.TaskToDO", b =>
@@ -239,17 +303,58 @@ namespace ToDoListApp.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("TaskId");
 
                     b.HasIndex("TagId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Tasks");
+
+                    b.HasData(
+                        new
+                        {
+                            TaskId = 1,
+                            CreatedAT = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Understand DbContext, Migrations, and LINQ",
+                            ExpectedEndDate = new DateTime(2025, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsCompleted = false,
+                            Status = 0,
+                            TagId = 2,
+                            Title = "Learn EF Core"
+                        },
+                        new
+                        {
+                            TaskId = 2,
+                            CreatedAT = new DateTime(2024, 12, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Create CRUD endpoints with pagination and filtering",
+                            ExpectedEndDate = new DateTime(2025, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsCompleted = false,
+                            Status = 1,
+                            TagId = 3,
+                            Title = "Build ToDo API"
+                        },
+                        new
+                        {
+                            TaskId = 3,
+                            CompletedAT = new DateTime(2024, 12, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAT = new DateTime(2024, 12, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Test TaskService methods using xUnit",
+                            ExpectedEndDate = new DateTime(2024, 12, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsCompleted = true,
+                            Status = 2,
+                            TagId = 4,
+                            Title = "Write Unit Tests"
+                        },
+                        new
+                        {
+                            TaskId = 4,
+                            CreatedAT = new DateTime(2024, 12, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Make generic repository work with Task and Note",
+                            ExpectedEndDate = new DateTime(2024, 12, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsCompleted = false,
+                            Status = 3,
+                            TagId = 5,
+                            Title = "Refactor Repository"
+                        });
                 });
 
             modelBuilder.Entity("ToDoListApp.Models.User", b =>
@@ -387,17 +492,6 @@ namespace ToDoListApp.Data.Migrations
                     b.Navigation("Task");
                 });
 
-            modelBuilder.Entity("ToDoListApp.Models.Tag", b =>
-                {
-                    b.HasOne("ToDoListApp.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ToDoListApp.Models.TaskToDO", b =>
                 {
                     b.HasOne("ToDoListApp.Models.Tag", "Tag")
@@ -406,15 +500,7 @@ namespace ToDoListApp.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ToDoListApp.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Tag");
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }
