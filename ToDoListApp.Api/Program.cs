@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Security.Claims;
 using System.Text;
+using ToDoListApp.Api;
 using ToDoListApp.Data;
 using ToDoListApp.Data.Repository;
 using ToDoListApp.Data.Repository.Implementation;
@@ -48,9 +49,16 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthorization();
 
 // to make all responses standard
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(opt =>
+{
+    opt.CustomizeProblemDetails = (c) =>
+    {
+        c.ProblemDetails.Instance = $"{c.HttpContext.Request.Method} {c.HttpContext.Request.Path}";
+        c.ProblemDetails.Extensions.Add("RequestId", c.HttpContext.TraceIdentifier); 
+    }; 
+});
 // Work With DB 
-
+builder.Services.AddExceptionHandler<GlobalErrorHandling>(); 
 string ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("No Connection Found");
 builder.Services.AddDbContext<AppDBContext>(opt => opt.UseSqlServer(ConnectionString));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -255,8 +263,9 @@ tags.MapDelete("/{id}", (int id, ClaimsPrincipal user,  ITagService Service) =>
 
 //app.MapHealthChecks("/healthz");
 ///
-app.UseRouting();
+app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseRouting(); 
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
